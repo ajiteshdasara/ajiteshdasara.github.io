@@ -28,7 +28,7 @@
 <script>
 async function init() {
     // Load the data from the provided CSV file
-    const data = await d3.csv('/mnt/data/cars2017 (1).csv', d => ({
+    const data = await d3.csv("https://flunky.github.io/cars2017.csv", d => ({
         Make: d.Make,
         Fuel: d.Fuel,
         EngineCylinders: +d.EngineCylinders,
