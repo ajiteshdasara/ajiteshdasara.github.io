@@ -64,9 +64,41 @@
             border: 1px solid #ccc; /* Add a border */
             border-radius: 5px; /* Make the corners rounded */
         }
+        .tabs {
+            display: flex;
+            margin-top: 30px;
+            border-bottom: 2px solid #ccc;
+        }
+        .tab {
+            padding: 15px 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #0056b3;
+            font-size: 1em;
+            border-bottom: 2px solid transparent;
+            transition: border-bottom 0.3s ease, color 0.3s ease;
+            margin-right: 10px;
+        }
+        .tab:hover,
+        .tab.active {
+            border-bottom: 2px solid #0056b3;
+            color: #004494;
+        }
+        .tab.active {
+            background-color: #e9f3ff; /* Light blue background for active tab */
+            font-weight: bold; /* Bold font for active tab */
+        }
+        .tab:last-child {
+            margin-right: 0;
+        }
     </style>
 </head>
 <body>
+    <div class="contain">        <div class="tabs">
+        <a href="index.html" class="tab">Home</a>
+        <a href="page3.html" class="tab">Fuel Efficiency Scatterplot</a>
+        <a href="page1.html" class="tab active">Compare Different Car Manufacturers</a>
+    </div></div>
     <div class="contain">
     <h1>Average Fuel efficiency of different car manufacturers</h1>
         <p>Fuel-efficient vehicles emit fewer greenhouse gases (GHGs) and pollutants. Traditional internal combustion engine (ICE) vehicles are significant contributors to air pollution and climate change. They release carbon dioxide (CO2), a primary greenhouse gas, along with other harmful pollutants like nitrogen oxides (NOx) and particulate matter. By improving fuel efficiency, vehicles burn less fuel per mile traveled, resulting in lower emissions. For example, advancements in vehicle technologies and fuel economy standards have prevented the release of billions of tons of GHGs.</p>

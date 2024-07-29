@@ -70,9 +70,41 @@
         .legend .electricity { background-color: green; }
         .legend .diesel { background-color: blue; }
         .legend .gasoline { background-color: orange; }
+        .tabs {
+            display: flex;
+            margin-top: 30px;
+            border-bottom: 2px solid #ccc;
+        }
+        .tab {
+            padding: 15px 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #0056b3;
+            font-size: 1em;
+            border-bottom: 2px solid transparent;
+            transition: border-bottom 0.3s ease, color 0.3s ease;
+            margin-right: 10px;
+        }
+        .tab:hover,
+        .tab.active {
+            border-bottom: 2px solid #0056b3;
+            color: #004494;
+        }
+        .tab.active {
+            background-color: #e9f3ff; /* Light blue background for active tab */
+            font-weight: bold; /* Bold font for active tab */
+        }
+        .tab:last-child {
+            margin-right: 0;
+        }
     </style>
 </head>
 <body>
+    <div class="contain">        <div class="tabs">
+        <a href="index.html" class="tab">Home</a>
+        <a href="page3.html" class="tab active">Fuel Efficiency Scatterplot</a>
+        <a href="page1.html" class="tab">Compare Different Car Manufacturers</a>
+    </div></div>
     <div class="contain">
         <h1>Fuel Efficiency Scatterplot</h1>
         <p>Fuel efficiency is an important factor in evaluating vehicle performance, especially with the growing emphasis on environmental sustainability. This scatterplot provides a visual comparison of various vehicles based on their average city and highway MPG, categorized by fuel type.</p>
