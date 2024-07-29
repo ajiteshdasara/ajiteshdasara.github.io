@@ -1,14 +1,177 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Dabb heeriye</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
-    <script src='main.js'></script>
+    <meta charset="UTF-8">
+    <title>Car MPG Comparison</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .contain {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            
+        }
+        h1, h2 {
+            color: #0056b3;
+        }
+        ul {
+            list-style: square;
+            padding-left: 20px;
+        }
+        .sources {
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        .source-title {
+            font-weight: bold;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            display: flex;
+        }
+        .third {
+            width: 33%;
+            padding: 20px;
+        }
+        .chart {
+            margin-top: 20px;
+        }
+        .bar-city {
+            fill: brown;
+        }
+        .bar-highway {
+            fill: green;
+        }
+        .styled-select {
+            font-family: 'Arial', sans-serif; /* Set your desired font */
+            font-size: 16px; /* Adjust the font size */
+            color: #333; /* Set the text color */
+            background-color: #f0f0f0; /* Background color of the dropdown */
+            padding: 5px; /* Add some padding */
+            border: 1px solid #ccc; /* Add a border */
+            border-radius: 5px; /* Make the corners rounded */
+        }
+    </style>
 </head>
 <body>
-    <p> This is a sample of github pages. This is another page. <a href="index.html">Go to index</a></p>
+    <div class="contain">
+    <h1>Average Fuel efficiency of different car manufacturers</h1>
+        <p>Fuel-efficient vehicles emit fewer greenhouse gases (GHGs) and pollutants. Traditional internal combustion engine (ICE) vehicles are significant contributors to air pollution and climate change. They release carbon dioxide (CO2), a primary greenhouse gas, along with other harmful pollutants like nitrogen oxides (NOx) and particulate matter. By improving fuel efficiency, vehicles burn less fuel per mile traveled, resulting in lower emissions. For example, advancements in vehicle technologies and fuel economy standards have prevented the release of billions of tons of GHGs.</p>
+        <p>You may be interested to know how efficient cars produced by various manufacturers are on average. From the drop-down menus below, select the names of manufacturers you are curious about, and compare their city and highway mileages to one another</p>
+    </div>
+        <div class="container">
+        <div class="third">
+            <select class="styled-select" id="manufacturer1" onchange="updateChart('chart1', this.value)">
+                <option value="">Select Manufacturer</option>
+            </select>
+            <div id="chart1" class="chart"></div>
+        </div>
+        <div class="third">
+            <select class="styled-select" id="manufacturer2" onchange="updateChart('chart2', this.value)">
+                <option value="">Select Manufacturer</option>
+            </select>
+            <div id="chart2" class="chart"></div>
+        </div>
+        <div class="third">
+            <select class="styled-select" id="manufacturer3" onchange="updateChart('chart3', this.value)">
+                <option value="">Select Manufacturer</option>
+            </select>
+            <div id="chart3" class="chart"></div>
+        </div>
+    </div>
+
+    <script>
+        d3.csv('https://flunky.github.io/cars2017.csv').then(function(data) {
+            const manufacturers = Array.from(new Set(data.map(d => d.Make)));
+
+            const avgData = manufacturers.map(make => {
+                const cars = data.filter(d => d.Make === make);
+                const avgCityMPG = d3.mean(cars, d => +d.AverageCityMPG);
+                const avgHighwayMPG = d3.mean(cars, d => +d.AverageHighwayMPG);
+
+                return {
+                    Make: make,
+                    AverageCityMPG: avgCityMPG,
+                    AverageHighwayMPG: avgHighwayMPG
+                };
+            });
+
+            populateDropdown('manufacturer1', manufacturers);
+            populateDropdown('manufacturer2', manufacturers);
+            populateDropdown('manufacturer3', manufacturers);
+
+            function populateDropdown(id, manufacturers) {
+                const dropdown = document.getElementById(id);
+                manufacturers.forEach(manufacturer => {
+                    const option = document.createElement('option');
+                    option.value = manufacturer;
+                    option.text = manufacturer;
+                    dropdown.add(option);
+                });
+            }
+
+            window.updateChart = function(chartId, manufacturer) {
+                const chartData = avgData.filter(d => d.Make === manufacturer);
+                if (chartData.length > 0) {
+                    const { AverageCityMPG, AverageHighwayMPG } = chartData[0];
+
+                    const svg = d3.select(`#${chartId}`).html('').append('svg')
+                        .attr('width', 300)
+                        .attr('height', 200);
+
+                    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+                    const width = +svg.attr('width') - margin.left - margin.right;
+                    const height = +svg.attr('height') - margin.top - margin.bottom;
+                    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+                    const x = d3.scaleBand()
+                        .rangeRound([0, width])
+                        .padding(0.1)
+                        .domain(['AverageCityMPG', 'AverageHighwayMPG']);
+
+                    const y = d3.scaleLinear()
+                        .rangeRound([height, 0])
+                        .domain([0, 100]);
+
+                    g.append('g')
+                        .attr('class', 'axis axis--x')
+                        .attr('transform', `translate(0,${height})`)
+                        .call(d3.axisBottom(x));
+
+                    g.append('g')
+                        .attr('class', 'axis axis--y')
+                        .call(d3.axisLeft(y).ticks(10).tickFormat(d3.format("d")));
+
+                    g.selectAll('.bar')
+                        .data([
+                            { key: 'AverageCityMPG', value: AverageCityMPG, class: 'bar-city' },
+                            { key: 'AverageHighwayMPG', value: AverageHighwayMPG, class: 'bar-highway' }
+                        ])
+                        .enter().append('rect')
+                        .attr('class', d => d.class)
+                        .attr('x', d => x(d.key))
+                        .attr('y', d => y(d.value))
+                        .attr('width', x.bandwidth())
+                        .attr('height', d => height - y(d.value));
+                }
+            };
+        }).catch(function(error) {
+            console.error('Error loading the CSV file:', error);
+        });
+    </script>
 </body>
 </html>
+

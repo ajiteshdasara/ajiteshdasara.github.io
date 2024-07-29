@@ -7,102 +7,131 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
         }
-        svg {
-            background-color: white;
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        circle {
-            stroke: black;
+        h1, h2 {
+            color: #0056b3;
+        }
+        ul {
+            list-style: square;
+            padding-left: 20px;
+        }
+        .sources {
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        .source-title {
+            font-weight: bold;
+        }
+        circle { stroke: black; }
+        text { font-size: 12px; }
+        .tooltip {
+            position: absolute;
+            text-align: left;
+            padding: 6px;
+            font-size: 12px;
+            background: lightsteelblue;
+            border: 1px solid #333;
+            border-radius: 4px;
+            pointer-events: none;
+            visibility: hidden;
         }
     </style>
 </head>
-<body onload="init()">
-<svg width="50%" height="50%"></svg>
+<body onload='init()'>
+    <a href="index.html">Go to Page 2</a>
+    <svg width="600" height="600"></svg>
+    <div class="tooltip"></div>
 <script>
 async function init() {
-    // Load the data from the provided CSV file
     const data = await d3.csv("https://flunky.github.io/cars2017.csv", d => ({
-        Make: d.Make,
-        Fuel: d.Fuel,
-        EngineCylinders: +d.EngineCylinders,
+        AverageCityMPG: +d.AverageCityMPG,
         AverageHighwayMPG: +d.AverageHighwayMPG,
-        AverageCityMPG: +d.AverageCityMPG
+        EngineCylinders: +d.EngineCylinders,
+        Fuel: d.Fuel,
+        Make: d.Make
     }));
 
-    const width = parseInt(d3.select("svg").attr("width")),
-          height = parseInt(d3.select("svg").attr("height")),
-          margin = { top: 20, right: 20, bottom: 50, left: 50 },
-          innerWidth = width - margin.left - margin.right,
-          innerHeight = height - margin.top - margin.bottom;
+    const width = 600;
+    const height = 600;
+    const margin = { top: 20, right: 20, bottom: 50, left: 50 };
 
-    // Set up the scales with a logarithmic base 10 scale
-    const xScale = d3.scaleLog()
-        .domain([10, 150])
-        .range([0, innerWidth]);
+    const xScale = d3.scaleLog().domain([10, 150]).range([0, width - margin.left - margin.right]);
+    const yScale = d3.scaleLog().domain([10, 150]).range([height - margin.top - margin.bottom, 0]);
 
-    const yScale = d3.scaleLog()
-        .domain([10, 150])
-        .range([innerHeight, 0]);
-
-    // Set up the axes with the specified tick values and format
-    const xAxis = d3.axisBottom(xScale)
-        .tickValues([10, 20, 50, 100])
-        .tickFormat(d3.format("~s"));
-
-    const yAxis = d3.axisLeft(yScale)
-        .tickValues([10, 20, 50, 100])
-        .tickFormat(d3.format("~s"));
+    const xAxis = d3.axisBottom(xScale).tickValues([10, 20, 50, 100]).tickFormat(d3.format("~s"));
+    const yAxis = d3.axisLeft(yScale).tickValues([10, 20, 50, 100]).tickFormat(d3.format("~s"));
 
     const svg = d3.select("svg")
         .attr("width", width)
         .attr("height", height)
         .append("g")
-        .attr("transform", `translate(${margin.left}, ${margin.top})`);
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Append the circles for each data point
+    const tooltip = d3.select(".tooltip");
+
     svg.selectAll("circle")
         .data(data)
         .enter()
         .append("circle")
         .attr("cx", d => xScale(d.AverageCityMPG))
         .attr("cy", d => yScale(d.AverageHighwayMPG))
-        .attr("r", d => 2 + d.EngineCylinders)
+        .attr("r", d => 4 + d.EngineCylinders / 1.5)
         .attr("fill", d => {
-            if (d.Fuel === 'electricity') return 'green';
-            if (d.Fuel === 'diesel') return 'blue';
-            if (d.Fuel === 'gasoline') return 'red';
+            if (d.Fuel === 'Electricity') return 'green';
+            if (d.Fuel === 'Diesel') return 'blue';
+            if (d.Fuel === 'Gasoline') return 'orange';
             return 'gray'; // Default color if fuel type is unknown
+        })
+        .on("mouseover", (event, d) => {
+            tooltip.style("visibility", "visible").style("top", (event.pageY + 10) + "px")
+            .style("left", (event.pageX + 10) + "px")
+                .html(`Make: ${d.Make}<br>
+                       Fuel: ${d.Fuel}<br>
+                       City MPG: ${d.AverageCityMPG}<br>
+                       Highway MPG: ${d.AverageHighwayMPG}<br>
+                       Cylinders: ${d.EngineCylinders}`);
+        })
+        .on("mousemove", (event, d) => {
+            tooltip.style("top", (event.pageY) + "px")
+                .style("left", (event.pageX) + "px");
+        })
+        .on("mouseout", () => {
+            tooltip.style("visibility", "hidden");
         });
 
-    // Append the x-axis
     svg.append("g")
-        .attr("transform", `translate(0, ${innerHeight})`)
+        .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
         .call(xAxis)
         .append("text")
-        .attr("class", "axis-label")
+        .attr("fill", "#000")
+        .attr("x", (width - margin.left - margin.right) / 2)
+        .attr("y", 35)
         .attr("text-anchor", "middle")
-        .attr("x", innerWidth / 2)
-        .attr("y", 40)
         .text("Average City MPG");
 
-    // Append the y-axis
     svg.append("g")
         .call(yAxis)
         .append("text")
-        .attr("class", "axis-label")
-        .attr("text-anchor", "middle")
-        .attr("x", -innerHeight / 2)
-        .attr("y", -40)
+        .attr("fill", "#000")
         .attr("transform", "rotate(-90)")
+        .attr("y", -40)
+        .attr("x", -(height - margin.top - margin.bottom) / 2)
+        .attr("dy", "0.71em")
+        .attr("text-anchor", "middle")
         .text("Average Highway MPG");
 }
 </script>
 </body>
 </html>
+
