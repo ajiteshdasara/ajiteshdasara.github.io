@@ -6,6 +6,24 @@
     <title>D3 Scatterplot with Hover Details</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .contain {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            
+        }
+        h1, h2 {
+            color: #0056b3;
+        }
         .tooltip {
             position: absolute;
             text-align: center;
@@ -32,115 +50,150 @@
             display: none;
         }
         circle { stroke: black; }
+        .legend {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .legend div {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+        }
+        .legend div span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+        }
+        .legend .electricity { background-color: green; }
+        .legend .diesel { background-color: blue; }
+        .legend .gasoline { background-color: orange; }
     </style>
 </head>
 <body>
-    <div id="details" class="details-box"></div>
-    <script>
-        // Load the data
-        d3.csv("https://flunky.github.io/cars2017.csv").then(function(data) {
-            // Parse the data
-            data.forEach(function(d) {
-                d.AverageCityMPG = +d.AverageCityMPG;
-                d.AverageHighwayMPG = +d.AverageHighwayMPG;
-                d.EngineCylinders = +d.EngineCylinders;
-            });
-
-            // Set dimensions and margins for the scatterplot
-            const margin = {top: 20, right: 30, bottom: 40, left: 40},
-                  width = 500 - margin.left - margin.right,
-                  height = 400 - margin.top - margin.bottom;
-
-            // Append SVG object to the body of the page
-            const svg = d3.select("body")
-                .append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`);
-
-            // Add X axis
-            const x = d3.scaleLog()
-                .base(10)
-                .domain([10, 150])
-                .range([0, width]);
-            svg.append("g")
-                .attr("transform", `translate(0,${height})`)
-                .call(d3.axisBottom(x)
-                    .tickValues([10, 20, 50, 100])
-                    .tickFormat(d3.format("~s")));
-
-            svg.append("text")
-                .attr("text-anchor", "end")
-                .attr("x", width / 2)
-                .attr("y", height + margin.bottom - 10)
-                .text("Average City MPG");
-
-            // Add Y axis
-            const y = d3.scaleLog()
-                .base(10)
-                .domain([10, 150])
-                .range([height, 0]);
-            svg.append("g")
-                .call(d3.axisLeft(y)
-                    .tickValues([10, 20, 50, 100])
-                    .tickFormat(d3.format("~s")));
-
-            svg.append("text")
-                .attr("text-anchor", "end")
-                .attr("x", -height / 2)
-                .attr("y", -margin.left + 15)
-                .attr("transform", "rotate(-90)")
-                .text("Average Highway MPG");
-
-            // Add dots
-            svg.append("g")
-                .selectAll("dot")
-                .data(data)
-                .enter()
-                .append("circle")
-                .attr("cx", d => x(d.AverageCityMPG))
-                .attr("cy", d => y(d.AverageHighwayMPG))
-                .attr("r", d => 4 + d.EngineCylinders/1.5)
-                .style("fill", d => {
-                    if (d.Fuel === "Electricity") return "green";
-                    if (d.Fuel === "Diesel") return "blue";
-                    return "orange";  // Default to gasoline
-                })
-                .on("mouseover", function(event, d) {
-                    const detailsBox = d3.select("#details");
-                    detailsBox.transition()
-                        .duration(200)
-                        .style("display", "block");
-                    detailsBox.html(`Make: ${d.Make}<br>Fuel: ${d.Fuel}<br>Engine Cylinders: ${d.EngineCylinders}<br>City MPG: ${d.AverageCityMPG}<br>Highway MPG: ${d.AverageHighwayMPG}`)
-                        .style("left", (event.pageX + 5) + "px")
-                        .style("top", (event.pageY - 28) + "px");
-                })
-                .on("mouseout", function(d) {
-                    d3.select("#details").transition()
-                        .duration(500)
-                        .style("display", "none");
+    <div class="contain">
+        <h1>Fuel Efficiency Scatterplot</h1>
+        <p>Fuel efficiency is an important factor in evaluating vehicle performance, especially with the growing emphasis on environmental sustainability. This scatterplot provides a visual comparison of various vehicles based on their average city and highway MPG, categorized by fuel type.</p>
+    </div>
+    <div class="contain">
+        <div id="details" class="details-box"></div>
+        <script>
+            // Load the data
+            d3.csv("https://flunky.github.io/cars2017.csv").then(function(data) {
+                // Parse the data
+                data.forEach(function(d) {
+                    d.AverageCityMPG = +d.AverageCityMPG;
+                    d.AverageHighwayMPG = +d.AverageHighwayMPG;
+                    d.EngineCylinders = +d.EngineCylinders;
                 });
 
-            const randomIndex = Math.floor(Math.random() * data.length);
-            const randomData = data[98];
+                // Set dimensions and margins for the scatterplot
+                const margin = {top: 20, right: 30, bottom: 40, left: 40},
+                      width = 800 - margin.left - margin.right,
+                      height = 600 - margin.top - margin.bottom;
 
-            // Annotate the random point
-            svg.append("line")
-                .attr("x1", x(randomData.AverageCityMPG))
-                .attr("y1", y(randomData.AverageHighwayMPG))
-                .attr("x2", x(randomData.AverageCityMPG) + 50)
-                .attr("y2", y(randomData.AverageHighwayMPG) - 30)
-                .attr("class", "annotation-line");
+                // Append SVG object to the body of the page
+                const pageWidth = document.documentElement.scrollWidth;
+                const svg = d3.select(".contain:last-child")
+                    .append("svg")
+                    .attr("width", pageWidth)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", `translate(${pageWidth/5},${margin.top})`);
 
-            svg.append("text")
-                .attr("x", x(randomData.AverageCityMPG) + 55)
-                .attr("y", y(randomData.AverageHighwayMPG) - 35)
-                .attr("class", "annotation")
-                .text(`City MPG: ${randomData.AverageCityMPG}, Highway MPG: ${randomData.AverageHighwayMPG}`);
-        });
-    </script>
+                // Add X axis
+                const x = d3.scaleLog()
+                    .base(10)
+                    .domain([10, 150])
+                    .range([0, width]);
+                svg.append("g")
+                    .attr("transform", `translate(0,${height})`)
+                    .call(d3.axisBottom(x)
+                        .tickValues([10, 20, 50, 100])
+                        .tickFormat(d3.format("~s")));
+
+                svg.append("text")
+                    .attr("text-anchor", "end")
+                    .attr("x", width / 1.5)
+                    .attr("y", height + margin.bottom - 10)
+                    .text("Average City MPG");
+
+                // Add Y axis
+                const y = d3.scaleLog()
+                    .base(10)
+                    .domain([10, 150])
+                    .range([height, 0]);
+                svg.append("g")
+                    .call(d3.axisLeft(y)
+                        .tickValues([10, 20, 50, 100])
+                        .tickFormat(d3.format("~s")));
+
+                svg.append("text")
+                    .attr("text-anchor", "end")
+                    .attr("x", -height / 3)
+                    .attr("y", -margin.left + 15)
+                    .attr("transform", "rotate(-90)")
+                    .text("Average Highway MPG");
+
+                // Add dots
+                svg.append("g")
+                    .selectAll("dot")
+                    .data(data)
+                    .enter()
+                    .append("circle")
+                    .attr("cx", d => x(d.AverageCityMPG))
+                    .attr("cy", d => y(d.AverageHighwayMPG))
+                    .attr("r", d => 4 + d.EngineCylinders / 1.5)
+                    .style("fill", d => {
+                        if (d.Fuel === "Electricity") return "green";
+                        if (d.Fuel === "Diesel") return "blue";
+                        return "orange";  // Default to gasoline
+                    })
+                    .on("mouseover", function(event, d) {
+                        const detailsBox = d3.select("#details");
+                        detailsBox.transition()
+                            .duration(200)
+                            .style("display", "block");
+                        detailsBox.html(`Make: ${d.Make}<br>Fuel: ${d.Fuel}<br>Engine Cylinders: ${d.EngineCylinders}<br>City MPG: ${d.AverageCityMPG}<br>Highway MPG: ${d.AverageHighwayMPG}`)
+                            .style("left", (event.pageX + 5) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function(d) {
+                        d3.select("#details").transition()
+                            .duration(500)
+                            .style("display", "none");
+                    });
+
+                const randomIndex = Math.floor(Math.random() * data.length);
+                const randomData = data[98];
+
+                // Annotate the random point
+                svg.append("line")
+                    .attr("x1", x(randomData.AverageCityMPG))
+                    .attr("y1", y(randomData.AverageHighwayMPG))
+                    .attr("x2", x(randomData.AverageCityMPG) + 50)
+                    .attr("y2", y(randomData.AverageHighwayMPG) - 30)
+                    .attr("class", "annotation-line");
+
+                svg.append("text")
+                    .attr("x", x(randomData.AverageCityMPG) + 55)
+                    .attr("y", y(randomData.AverageHighwayMPG) - 35)
+                    .attr("class", "annotation")
+                    .text(`City MPG: ${randomData.AverageCityMPG}, Highway MPG: ${randomData.AverageHighwayMPG}`);
+            });
+        </script>
+        <div class="legend">
+            <div><span class="electricity"></span>Electricity</div>
+            <div><span class="diesel"></span>Diesel</div>
+            <div><span class="gasoline"></span>Gasoline</div>
+        </div>
+    </div>
 </body>
 </html>
+
+
+
 
 
