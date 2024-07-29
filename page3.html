@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D3 Scatterplot with Hover Details</title>
+    <title>Fuel Efficiency Scatterplot</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {
@@ -107,7 +107,7 @@
     </div></div>
     <div class="contain">
         <h1>Fuel Efficiency Scatterplot</h1>
-        <p>Fuel efficiency is an important factor in evaluating vehicle performance, especially with the growing emphasis on environmental sustainability. This scatterplot provides a visual comparison of various vehicles based on their average city and highway MPG, categorized by fuel type.</p>
+        <p>As mentioned in the previous page, fuel efficiency is an important factor in evaluating vehicle performance, especially with the growing emphasis on environmental sustainability. The scatterplot below provides a visual comparison of various vehicles based on their average city and highway MPG, categorized by fuel type. Each circle represents a single vehicle, and you can hover your mouse pointer over it to reveal further information about the data point such as the exact average city and highway mileages, the manufacturer, the number of engine cylinders, and its fuel type.</p>
     </div>
     <div class="contain">
         <div id="details" class="details-box"></div>
@@ -188,7 +188,7 @@
                         detailsBox.transition()
                             .duration(200)
                             .style("display", "block");
-                        detailsBox.html(`Make: ${d.Make}<br>Fuel: ${d.Fuel}<br>Engine Cylinders: ${d.EngineCylinders}<br>City MPG: ${d.AverageCityMPG}<br>Highway MPG: ${d.AverageHighwayMPG}`)
+                        detailsBox.html(`Manufacturer: ${d.Make}<br>Fuel: ${d.Fuel}<br>Engine Cylinders: ${d.EngineCylinders}<br>City MPG: ${d.AverageCityMPG}<br>Highway MPG: ${d.AverageHighwayMPG}`)
                             .style("left", (event.pageX + 5) + "px")
                             .style("top", (event.pageY - 28) + "px");
                     })
